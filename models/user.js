@@ -1,4 +1,4 @@
-const {Schema, model} = require('mongoose');
+const { Schema, model } = require('mongoose');
 
 const userSchema = new Schema({
   name: {
@@ -15,8 +15,8 @@ const userSchema = new Schema({
   },
   avatar: {
     type: String,
-    required: true
-  }
-}, {versionKey: false});
+    required: true,
+  },
+}, { versionKey: false });
 
 module.exports = model('user', userSchema);
