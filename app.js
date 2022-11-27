@@ -1,5 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const {
+  STATUS_NOT_FOUND,
+} = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -24,5 +27,5 @@ app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
 app.use((req, res) => {
-  res.status(404).send({ message: 'Такого роута не существует' });
+  res.status(STATUS_NOT_FOUND).send({ message: 'Такого роута не существует' });
 });

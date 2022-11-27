@@ -42,6 +42,8 @@ module.exports.deleteCardById = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
+      } else {
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
       }
     });
 };
@@ -64,6 +66,7 @@ module.exports.putLike = (req, res) => {
 
 module.exports.deleteLike = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (card) res.send({ data: card });
       else res.status(STATUS_NOT_FOUND).send(STATUS_NOT_FOUND_MESSAGE);
