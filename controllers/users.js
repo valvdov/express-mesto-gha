@@ -1,22 +1,33 @@
 const User = require('../models/user');
+const {
+  STATUS_BAD_REQUEST,
+  STATUS_NOT_FOUND,
+  STATUS_INTERNAL_SERVER_ERROR,
+  STATUS_BAD_REQUEST_MESSAGE,
+  STATUS_NOT_FOUND_MESSAGE,
+  STATUS_INTERNAL_SERVER_ERROR_MESSAGE,
+} = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => {
       res.send({ data: users });
     })
-    .catch(() => res.status(500).send({ message: 'error' }));
+    .catch(() => res.status(STATUS_INTERNAL_SERVER_ERROR)
+      .send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE));
 };
 
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.id)
     .then((user) => {
       if (user) res.send({ data: user });
-      else res.status(404).send({ message: `Пользователь по указанному id(${req.params.id}) не найден` });
+      else res.status(STATUS_NOT_FOUND).send(STATUS_NOT_FOUND_MESSAGE);
     })
     .catch((err) => {
-      if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
-        res.status(400).send({ message: 'Произошла ошибка по умолчанию' });
+      if (err.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
+      } else {
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
       }
     });
 };
@@ -28,10 +39,10 @@ module.exports.createUser = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
+      if (err.name === 'CastError') {
+        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
       } else {
-        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
       }
     });
 };
@@ -41,13 +52,13 @@ module.exports.updateMyInfo = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user) res.send({ data: user });
-      else res.status(404).send({ message: `Пользователь с указанным id)${req.params.id}) не найден` });
+      else res.status(STATUS_NOT_FOUND).send(STATUS_NOT_FOUND_MESSAGE);
     })
     .catch((err) => {
       if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
-        res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
+        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
       } else {
-        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
       }
     });
 };
@@ -57,13 +68,13 @@ module.exports.updateMyAvatar = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (user) res.send({ data: user });
-      else res.status(404).send({ message: `Пользователь с указанным id(${req.params.id}) не найден` });
+      else res.status(STATUS_NOT_FOUND).send(STATUS_NOT_FOUND_MESSAGE);
     })
     .catch((err) => {
       if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
-        res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
       } else {
-        res.status(500).send({ message: 'Произошла ошибка по умолчанию' });
+        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
       }
     });
 };
