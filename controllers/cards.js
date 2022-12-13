@@ -1,81 +1,76 @@
 const Card = require('../models/card');
 const {
-  STATUS_BAD_REQUEST,
-  STATUS_NOT_FOUND,
-  STATUS_INTERNAL_SERVER_ERROR,
-  STATUS_BAD_REQUEST_MESSAGE,
-  STATUS_NOT_FOUND_MESSAGE,
-  STATUS_INTERNAL_SERVER_ERROR_MESSAGE,
+  STATUS_OK,
+  STATUS_CREATED,
 } = require('../utils/constants');
+const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .populate(['owner', 'likes'])
     .then((cards) => {
-      res.send({ data: cards });
+      res.status(STATUS_OK).send({ data: cards });
     })
-    .catch(() => res.status(STATUS_INTERNAL_SERVER_ERROR)
-      .send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
+  const owner = req.user._id;
   const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id })
+
+  Card.create({ name, link, owner })
     .then((card) => {
-      res.send({ data: card });
+      res.status(STATUS_CREATED).send({ data: card });
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
-      } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
-      }
-    });
+    .catch(next);
 };
 
-module.exports.deleteCardById = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+module.exports.deleteCardById = (req, res, next) => {
+  const { cardId } = req.params;
+  const userId = req.user._id;
+  Card.findByIdAndRemove(cardId)
     .then((card) => {
-      if (card) res.send({ data: card });
-      else res.status(STATUS_NOT_FOUND).send(STATUS_NOT_FOUND_MESSAGE);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
+      if (card === null) {
+        throw new NotFoundError('Карточка с указанным _id не найдена.');
+      } else if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
+        throw new ForbiddenError('Недостаточно прав для удаления карточки');
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
+        res.status(STATUS_OK).send({ data: card });
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.putLike = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-    .populate(['owner', 'likes'])
+module.exports.putLike = (req, res, next) => {
+  const { cardId } = req.params;
+  Card.findByIdAndUpdate(
+    cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
     .then((card) => {
-      if (card) res.send({ data: card });
-      else res.status(STATUS_NOT_FOUND).send(STATUS_NOT_FOUND_MESSAGE);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
+      if (card === null) {
+        throw new NotFoundError('Карточка с указанным _id не найдена.');
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
+        res.status(STATUS_OK).send({ data: card });
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.deleteLike = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-    .populate(['owner', 'likes'])
+module.exports.deleteLike = (req, res, next) => {
+  const { cardId } = req.params;
+  Card.findByIdAndUpdate(
+    cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  )
     .then((card) => {
-      if (card) res.send({ data: card });
-      else res.status(STATUS_NOT_FOUND).send(STATUS_NOT_FOUND_MESSAGE);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(STATUS_BAD_REQUEST).send(STATUS_BAD_REQUEST_MESSAGE);
+      if (card === null) {
+        throw new NotFoundError('Карточка с указанным _id не найдена.');
       } else {
-        res.status(STATUS_INTERNAL_SERVER_ERROR).send(STATUS_INTERNAL_SERVER_ERROR_MESSAGE);
+        res.status(STATUS_OK).send({ data: card });
       }
-    });
+    })
+    .catch(next);
 };
