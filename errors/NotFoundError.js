@@ -4,5 +4,6 @@ class NotFoundError extends Error {
     this.statusCode = 404;
   }
 }
-
-module.exports = NotFoundError;
+const notFoundCard = 'Карточка с указанным _id не найдена';
+const notFoundUser = 'Пользователь по указанному _id не найден';
+module.exports = { NotFoundError, notFoundCard, notFoundUser };

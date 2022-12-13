@@ -4,5 +4,5 @@ class UnauthorizedError extends Error {
     this.statusCode = 401;
   }
 }
-
-module.exports = UnauthorizedError;
+const unauthorizedUser = 'Необходима авторизация';
+module.exports = { UnauthorizedError, unauthorizedUser };

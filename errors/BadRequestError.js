@@ -4,4 +4,6 @@ class BadRequestError extends Error {
     this.statusCode = 401;
   }
 }
-module.exports = BadRequestError;
+
+const badRequestLogin = 'Неправильные почта или пароль';
+module.exports = { BadRequestError, badRequestLogin };

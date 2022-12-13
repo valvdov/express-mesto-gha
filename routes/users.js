@@ -13,7 +13,7 @@ const { checkUser, checkUserId, checkUserData } = require('../utils/validation')
 
 router.get('/users', auth, getUsers);
 router.get('/users/me', auth, getMyInfo);
-router.get('/users/:id', auth, checkUserId, getUserById);
+router.get('/users/:userId', auth, checkUserId, getUserById);
 
 router.post('/signin', checkUser, login);
 router.post('/signup', checkUser, createUser);

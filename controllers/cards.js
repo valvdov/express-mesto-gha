@@ -3,7 +3,7 @@ const {
   STATUS_OK,
   STATUS_CREATED,
 } = require('../utils/constants');
-const NotFoundError = require('../errors/NotFoundError');
+const { NotFoundError, notFoundCard } = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
@@ -31,9 +31,9 @@ module.exports.deleteCardById = (req, res, next) => {
   Card.findByIdAndRemove(cardId)
     .then((card) => {
       if (card === null) {
-        throw new NotFoundError('Карточка с указанным _id не найдена.');
+        throw new NotFoundError(notFoundCard);
       } else if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
-        throw new ForbiddenError('Недостаточно прав для удаления карточки');
+        throw new ForbiddenError('У Вас недостаточно прав для удаления карточки');
       } else {
         res.status(STATUS_OK).send({ data: card });
       }
@@ -50,7 +50,7 @@ module.exports.putLike = (req, res, next) => {
   )
     .then((card) => {
       if (card === null) {
-        throw new NotFoundError('Карточка с указанным _id не найдена.');
+        throw new NotFoundError(notFoundCard);
       } else {
         res.status(STATUS_OK).send({ data: card });
       }
@@ -67,7 +67,7 @@ module.exports.deleteLike = (req, res, next) => {
   )
     .then((card) => {
       if (card === null) {
-        throw new NotFoundError('Карточка с указанным _id не найдена.');
+        throw new NotFoundError(notFoundCard);
       } else {
         res.status(STATUS_OK).send({ data: card });
       }

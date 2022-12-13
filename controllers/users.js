@@ -5,9 +5,9 @@ const {
   STATUS_OK,
   STATUS_CREATED,
 } = require('../utils/constants');
-const BadRequestError = require('../errors/BadRequestError');
+const { BadRequestError, badRequestLogin } = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
-const NotFoundError = require('../errors/NotFoundError');
+const { NotFoundError, notFoundUser } = require('../errors/NotFoundError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -21,7 +21,7 @@ module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((data) => {
       if (data === null) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
+        throw new NotFoundError(notFoundUser);
       } else {
         res.status(STATUS_OK).send({ data });
       }
@@ -64,7 +64,7 @@ module.exports.updateMyInfo = (req, res, next) => {
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((data) => {
       if (data === null) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
+        throw new NotFoundError(notFoundUser);
       } else {
         res.status(STATUS_OK).send({ data });
       }
@@ -78,7 +78,7 @@ module.exports.updateMyAvatar = (req, res, next) => {
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     .then((data) => {
       if (data === null) {
-        throw new NotFoundError('Пользователь с указанным _id не найден.');
+        throw new NotFoundError(notFoundUser);
       } else {
         res.status(STATUS_OK).send({ data });
       }
@@ -103,7 +103,7 @@ module.exports.login = (req, res, next) => {
         const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
         res.send({ token });
       }
-      throw new BadRequestError('Неправильные почта или пароль');
+      throw new BadRequestError(badRequestLogin);
     })
     .catch(next);
 };
