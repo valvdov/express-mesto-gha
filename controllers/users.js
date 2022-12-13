@@ -5,7 +5,7 @@ const {
   STATUS_OK,
   STATUS_CREATED,
 } = require('../utils/constants');
-const { BadRequestError, badRequestLogin } = require('../errors/BadRequestError');
+const { BadRequestError } = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
 const { NotFoundError, notFoundUser } = require('../errors/NotFoundError');
 
@@ -26,20 +26,20 @@ module.exports.getUserById = (req, res, next) => {
         res.status(STATUS_OK).send({ data });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  if (!email || !password) {
-    try {
-      throw new BadRequestError('Переданы некорректные данные при создании пользователя.');
-    } catch (e) {
-      next(e);
-    }
-  }
+
   bcrypt.hash(password, 10)
     .then((hash) => {
       User.create({
@@ -51,8 +51,18 @@ module.exports.createUser = (req, res, next) => {
             _id, email, name, about, avatar,
           });
         })
-        .catch(() => {
-          next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            next(new BadRequestError(
+              'Переданы некорректные данные в методы создания пользователя',
+            ));
+          } else if (err.code === 11000) {
+            next(new ConflictError(
+              'Пользователь с таким email уже существует',
+            ));
+          } else {
+            next(err);
+          }
         });
     });
 };
@@ -69,7 +79,13 @@ module.exports.updateMyInfo = (req, res, next) => {
         res.status(STATUS_OK).send({ data });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateMyAvatar = (req, res, next) => {
@@ -83,7 +99,13 @@ module.exports.updateMyAvatar = (req, res, next) => {
         res.status(STATUS_OK).send({ data });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.getMyInfo = (req, res, next) => {
@@ -99,11 +121,8 @@ module.exports.login = (req, res, next) => {
 
   User.findUserByCredentials(email, password)
     .then((user) => {
-      if (user) {
-        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-        res.send({ token });
-      }
-      throw new BadRequestError(badRequestLogin);
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.send({ token });
     })
     .catch(next);
 };

@@ -22,25 +22,57 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => {
       res.status(STATUS_CREATED).send({ data: card });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
 
-module.exports.deleteCardById = (req, res, next) => {
+// module.exports.deleteCardById = (req, res, next) => {
+//   const { cardId } = req.params;
+//   const userId = req.user._id;
+//   Card.findByIdAndRemove(cardId)
+//     .then((card) => {
+//       if (card === null) {
+//         throw new NotFoundError(notFoundCard);
+//       } else if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
+//         throw new ForbiddenError('У Вас недостаточно прав для удаления карточки');
+//       } else {
+//         res.status(STATUS_OK).send({ data: card });
+//       }
+//     })
+//     .catch((err) => {
+//       if (err.name === 'CastError') {
+//         next(err);
+//       } else {
+//         next(err);
+//       }
+//     });
+// };
+
+exports.deleteCardById = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
+    .orFail(() => new NotFoundError(notFoundCard))
     .then((card) => {
-      if (card === null) {
-        throw new NotFoundError(notFoundCard);
-      } else if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
+      if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
         throw new ForbiddenError('У Вас недостаточно прав для удаления карточки');
       } else {
         res.status(STATUS_OK).send({ data: card });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
-
 module.exports.putLike = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(
@@ -55,7 +87,13 @@ module.exports.putLike = (req, res, next) => {
         res.status(STATUS_OK).send({ data: card });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.deleteLike = (req, res, next) => {
@@ -72,5 +110,11 @@ module.exports.deleteLike = (req, res, next) => {
         res.status(STATUS_OK).send({ data: card });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };

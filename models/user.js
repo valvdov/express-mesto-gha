@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const { BadRequestError, badRequestLogin } = require('../errors/BadRequestError');
 
 const userSchema = new Schema({
@@ -21,11 +22,19 @@ const userSchema = new Schema({
     type: String,
     required: false,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator: (v) => validator.isURL(v),
+      message: 'Некорректная ссылка',
+    },
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: (v) => validator.isEmail(v),
+      message: 'Некорректный email',
+    },
   },
   password: {
     type: String,
