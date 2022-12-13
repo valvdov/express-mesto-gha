@@ -8,6 +8,7 @@ const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
+    .populate(['owner', 'likes'])
     .then((cards) => {
       res.status(STATUS_OK).send({ data: cards });
     })
@@ -31,28 +32,6 @@ module.exports.createCard = (req, res, next) => {
     });
 };
 
-// module.exports.deleteCardById = (req, res, next) => {
-//   const { cardId } = req.params;
-//   const userId = req.user._id;
-//   Card.findByIdAndRemove(cardId)
-//     .then((card) => {
-//       if (card === null) {
-//         throw new NotFoundError(notFoundCard);
-//       } else if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
-//         throw new ForbiddenError('У Вас недостаточно прав для удаления карточки');
-//       } else {
-//         res.status(STATUS_OK).send({ data: card });
-//       }
-//     })
-//     .catch((err) => {
-//       if (err.name === 'CastError') {
-//         next(err);
-//       } else {
-//         next(err);
-//       }
-//     });
-// };
-
 exports.deleteCardById = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
@@ -61,9 +40,9 @@ exports.deleteCardById = (req, res, next) => {
     .then((card) => {
       if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
         throw new ForbiddenError('У Вас недостаточно прав для удаления карточки');
-      } else {
-        res.status(STATUS_OK).send({ data: card });
       }
+      return card.remove()
+        .then(() => res.status(STATUS_OK).send({ data: card }));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -80,6 +59,7 @@ module.exports.putLike = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
         throw new NotFoundError(notFoundCard);
@@ -103,6 +83,7 @@ module.exports.deleteLike = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (card === null) {
         throw new NotFoundError(notFoundCard);

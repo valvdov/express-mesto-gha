@@ -1,7 +1,8 @@
 const { Schema, model } = require('mongoose');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
-const { BadRequestError, badRequestLogin } = require('../errors/BadRequestError');
+const { badRequestLogin, BadRequestError } = require('../errors/BadRequestError');
+const { UnauthorizedError } = require('../errors/UnauthorizedError');
 
 const userSchema = new Schema({
   name: {
@@ -47,7 +48,7 @@ userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new BadRequestError(badRequestLogin));
+        return Promise.reject(new UnauthorizedError(badRequestLogin));
       }
 
       return bcrypt.compare(password, user.password)
