@@ -5,7 +5,7 @@ const {
   STATUS_OK,
   STATUS_CREATED,
 } = require('../utils/constants');
-const { BadRequestError } = require('../errors/BadRequestError');
+const { BadRequestError, badRequestMessage } = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
 const { NotFoundError, notFoundUser } = require('../errors/NotFoundError');
 
@@ -28,7 +28,9 @@ module.exports.getUserById = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(err);
+        next(new BadRequestError(
+          badRequestMessage,
+        ));
       } else {
         next(err);
       }
@@ -54,7 +56,7 @@ module.exports.createUser = (req, res, next) => {
         .catch((err) => {
           if (err.name === 'ValidationError') {
             next(new BadRequestError(
-              'Переданы некорректные данные в методы создания пользователя',
+              badRequestMessage,
             ));
           } else if (err.code === 11000) {
             next(new ConflictError(
@@ -81,7 +83,9 @@ module.exports.updateMyInfo = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(err);
+        next(new BadRequestError(
+          badRequestMessage,
+        ));
       } else {
         next(err);
       }
@@ -101,7 +105,9 @@ module.exports.updateMyAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(err);
+        next(new BadRequestError(
+          badRequestMessage,
+        ));
       } else {
         next(err);
       }

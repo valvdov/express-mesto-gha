@@ -5,5 +5,5 @@ class BadRequestError extends Error {
   }
 }
 
-const badRequestLogin = 'Неправильные почта или пароль';
-module.exports = { BadRequestError, badRequestLogin };
+const badRequestMessage = 'Переданы некорректные данные';
+module.exports = { BadRequestError, badRequestMessage };

@@ -5,10 +5,10 @@ const {
 } = require('../utils/constants');
 const { NotFoundError, notFoundCard } = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
+const { BadRequestError, badRequestMessage } = require('../errors/BadRequestError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .populate(['owner', 'likes'])
     .then((cards) => {
       res.status(STATUS_OK).send({ data: cards });
     })
@@ -25,7 +25,9 @@ module.exports.createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(err);
+        next(new BadRequestError(
+          badRequestMessage,
+        ));
       } else {
         next(err);
       }
@@ -46,7 +48,9 @@ exports.deleteCardById = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(err);
+        next(new BadRequestError(
+          badRequestMessage,
+        ));
       } else {
         next(err);
       }
@@ -69,7 +73,9 @@ module.exports.putLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(err);
+        next(new BadRequestError(
+          badRequestMessage,
+        ));
       } else {
         next(err);
       }
@@ -93,7 +99,9 @@ module.exports.deleteLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(err);
+        next(new BadRequestError(
+          badRequestMessage,
+        ));
       } else {
         next(err);
       }
