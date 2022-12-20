@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const { errors } = require('celebrate');
@@ -13,6 +14,11 @@ mongoose.connect('mongodb://localhost:27017/mestodb', { useNewUrlParser: true },
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 app.use(router);
 app.use(errors());
 app.use((err, req, res, next) => {
