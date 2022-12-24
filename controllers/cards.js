@@ -1,109 +1,98 @@
 const Card = require('../models/card');
-const {
-  STATUS_OK,
-  STATUS_CREATED,
-} = require('../utils/constants');
 const { NotFoundError, notFoundCard } = require('../errors/NotFoundError');
-const ForbiddenError = require('../errors/ForbiddenError');
 const { BadRequestError, badRequestMessage } = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
-module.exports.getCards = (req, res, next) => {
+const createCard = (req, res, next) => {
+  const { name, link } = req.body;
+  Card.create({ name, link, owner: req.user._id })
+    .then((card) => res.send(card))
+    .catch((e) => {
+      if (e.name === 'ValidationError') {
+        next(new BadRequestError(badRequestMessage));
+      } else {
+        next(e);
+      }
+    });
+};//
+
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      res.status(STATUS_OK).send({ data: cards });
+      res.send(cards);
     })
     .catch(next);
 };
 
-module.exports.createCard = (req, res, next) => {
-  const owner = req.user._id;
-  const { name, link } = req.body;
-
-  Card.create({ name, link, owner })
-    .then((card) => {
-      res.status(STATUS_CREATED).send({ data: card });
+const deleteCardById = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .orFail(() => {
+      throw new NotFoundError(notFoundCard);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError(
-          badRequestMessage,
-        ));
-      } else {
-        next(err);
-      }
-    });
-};
-
-exports.deleteCardById = (req, res, next) => {
-  const { cardId } = req.params;
-  const userId = req.user._id;
-  Card.findById(cardId)
-    .orFail(() => new NotFoundError(notFoundCard))
     .then((card) => {
-      if (JSON.stringify(userId) !== JSON.stringify(card.owner._id)) {
+      const owner = card.owner.toString();
+      if (req.user._id === owner) {
+        Card.deleteOne(card)
+          .then(() => {
+            res.send(card);
+          })
+          .catch(next);
+      } else {
         throw new ForbiddenError('У Вас недостаточно прав для удаления карточки');
       }
-      return card.remove()
-        .then(() => res.status(STATUS_OK).send({ data: card }));
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError(
-          badRequestMessage,
-        ));
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError(badRequestMessage));
       } else {
-        next(err);
+        next(e);
       }
     });
-};
-module.exports.putLike = (req, res, next) => {
-  const { cardId } = req.params;
+};//
+
+const putLike = (req, res, next) => {
   Card.findByIdAndUpdate(
-    cardId,
-    { $addToSet: { likes: req.user._id } },
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .populate(['owner', 'likes'])
-    .then((card) => {
-      if (card === null) {
-        throw new NotFoundError(notFoundCard);
-      } else {
-        res.status(STATUS_OK).send({ data: card });
-      }
+    .orFail(() => {
+      throw new NotFoundError(notFoundCard);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError(
-          badRequestMessage,
-        ));
+    .then((card) => {
+      res.send(card);
+    })
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError(badRequestMessage));
       } else {
-        next(err);
+        next(e);
       }
     });
-};
+};//
 
-module.exports.deleteLike = (req, res, next) => {
-  const { cardId } = req.params;
+const deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(
-    cardId,
+    req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
     .populate(['owner', 'likes'])
-    .then((card) => {
-      if (card === null) {
-        throw new NotFoundError(notFoundCard);
-      } else {
-        res.status(STATUS_OK).send({ data: card });
-      }
+    .orFail(() => {
+      throw new NotFoundError(notFoundCard);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError(
-          badRequestMessage,
-        ));
+    .then((card) => {
+      res.send(card);
+    })
+    .catch((e) => {
+      if (e.name === 'CastError') {
+        next(new BadRequestError(badRequestMessage));
       } else {
-        next(err);
+        next(e);
       }
     });
+};
+
+module.exports = {
+  createCard, getCards, deleteCardById, putLike, deleteLike,
 };

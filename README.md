@@ -14,13 +14,13 @@
 5. PATCH /users/me/avatar — обновляет аватар пользователя;
 6. GET /cards — возвращает все карточки из базы;
 7. POST /cards — создаёт карточку с переданными в теле запроса name и link , устанавливает поле owner для
-карточки;
+   карточки;
 8. DELETE /cards/:cardId — удаляет карточку по _id ;
 9. PUT /cards/:cardId/likes — ставит лайк карточке;
 10. DELETE /cards/:cardId/likes — убирает лайк с карточки;
 11. POST /sginup — регестрация пользователя;
 12. POST /signin — вход в учетную запись пользователя;
-  
+
 ### Запуск проекта
 
 `npm run start` — запускает сервер   
@@ -30,5 +30,7 @@
 [Ссылка на GitHub](https://github.com/valvdov/express-mesto-gha)
 
 IP 158.160.24.149
+
 Frontend https://mesto.valvdov.nomoredomains.club
+
 Backend https://api.mesto.valvdov.nomoredomains.club

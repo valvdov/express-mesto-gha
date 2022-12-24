@@ -5,8 +5,8 @@ const cardSchema = new Schema({
   name: {
     type: String,
     required: true,
-    minLength: 2,
-    maxLength: 30,
+    minlength: 2,
+    maxlength: 30,
   },
   link: {
     type: String,
@@ -21,10 +21,11 @@ const cardSchema = new Schema({
     ref: 'user',
     required: true,
   },
-  likes: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'user' }],
+  likes: [{
+    type: Schema.Types.ObjectId,
+    ref: 'user',
     default: [],
-  },
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

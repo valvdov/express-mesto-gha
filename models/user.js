@@ -7,21 +7,18 @@ const { UnauthorizedError } = require('../errors/UnauthorizedError');
 const userSchema = new Schema({
   name: {
     type: String,
-    required: false,
     default: 'Жак-Ив Кусто',
     minlength: 2,
     maxlength: 30,
   },
   about: {
     type: String,
-    required: false,
     default: 'Исследователь',
     minlength: 2,
     maxlength: 30,
   },
   avatar: {
     type: String,
-    required: false,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
       validator: (v) => validator.isURL(v),
@@ -44,7 +41,7 @@ const userSchema = new Schema({
   },
 }, { versionKey: false });
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findOne(email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
@@ -56,9 +53,9 @@ userSchema.statics.findUserByCredentials = function (email, password) {
           if (!matched) {
             return Promise.reject(new BadRequestError('Неправильные почта или пароль'));
           }
-
           return user;
         });
     });
 };
+
 module.exports = model('user', userSchema);
